@@ -3,14 +3,18 @@ var express = require('express');
 var server = express();
 
 server.configure(function () {
-  server.use(express.logger());
+  server.use(express.logger('dev'));
   server.use(express.static('public'));
   server.use(express.bodyParser());
 });
 
-server.post('/postCode', function(req, res){
+server.post('/postCode', function(req, res, next) {
   var code = req.body.code;
-  var result = eval(code);
+  try  {
+    var result = eval(code);
+  } catch(err) {
+    next(err);
+  }
   res.end(String(result));
 });
 
