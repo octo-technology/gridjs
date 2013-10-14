@@ -9,7 +9,6 @@ server.configure(function () {
 
 var port = (process.env.PORT ? process.env.PORT : 8000);
 server.listen(port).listen(function () {
-  // Put a friendly message on the terminal
   console.log("Node Server running on port " + port);
 });
 
