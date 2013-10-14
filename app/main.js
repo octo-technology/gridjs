@@ -41,7 +41,7 @@ var server = http.createServer(function (request, response) {
 });
 
 
-server.listen(process.env.PORT || 8000).listen(function () {
+server.listen(process.env.PORT || 8000, function () {
   // Put a friendly message on the terminal
   console.log("Node Server running on port " + process.env.PORT || 8000);
 });
