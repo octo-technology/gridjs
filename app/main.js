@@ -1,4 +1,5 @@
 var express = require('express');
+var vm = require('vm');
 
 var server = express();
 
@@ -11,7 +12,7 @@ server.configure(function () {
 server.post('/postCode', function(req, res, next) {
   var code = req.body.code;
   try  {
-    var result = eval(code);
+    var result = vm.runInNewContext(code);
   } catch(err) {
     next(err);
   }
