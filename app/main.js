@@ -40,9 +40,9 @@ var server = http.createServer(function (request, response) {
     " + popover + "</html>");
 });
 
-
-server.listen(process.env.PORT || 8000).listen(function () {
+var port = (process.env.PORT ? process.env.PORT : 8000);
+server.listen(port).listen(function () {
   // Put a friendly message on the terminal
-  console.log("Node Server running on port " + process.env.PORT || 8000);
+  console.log("Node Server running on port " + port);
 });
 
