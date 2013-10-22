@@ -1,17 +1,12 @@
 $(function () {
-  var answer = $('.answer');
-  $('#execute').click(function () {
-    var code = $('#jscode').val();
-    $.ajax({
-		url: '/postCode',
-		type: 'POST',
-		data: {'code': code},
-		success: function(data){
-			alert(data);
-		},
-		error: function(err){
-			console.log(err);
-		}
+	var socket = io.connect('http://localhost:8000');
+
+	$('#execute').click(function () {
+		socket.emit('sendJS', {code: $('#jscode').val()});
 	});
-  });
+
+	socket.on('execJS', function (data) {
+		console.log(data);
+		eval(data.code);
+	});
 });
