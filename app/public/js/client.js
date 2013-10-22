@@ -5,8 +5,10 @@ $(function () {
 		socket.emit('sendJS', {code: $('#jscode').val()});
 	});
 
-	socket.on('execJS', function (data) {
-		console.log(data);
-		eval(data.code);
+
+	socket.on('broadcastJS', function (data) {
+		$('#getJS').click(function(){
+			eval(data.code);
+		});
 	});
 });

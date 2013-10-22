@@ -16,21 +16,12 @@ app.configure(function () {
   app.use(express.bodyParser());
 });
 
-app.post('/postCode', function(req, res, next) {
-  var code = req.body.code;
-  try  {
-    var result = vm.runInNewContext(code);
-  } catch(err) {
-    next(err);
-  }
-  res.end(String(result));
-});
 
 // Socket IO listener
 io.sockets.on('connection', function (socket) {
   socket.on('sendJS', function (data) {
     console.log(data);
-    socket.broadcast.emit('execJS', data);
+    socket.broadcast.emit('broadcastJS', data);
   });
 });
 
