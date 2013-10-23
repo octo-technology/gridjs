@@ -16,11 +16,7 @@ app.configure(function () {
   app.use(express.bodyParser());
   app.use(express.errorHandler());
   app.use(app.router);
-  //app.use(express.static('public'));
-  app.param('id');
-  app.use('/', express.static(__dirname + '/public'));
-  app.use('/step1', express.static(__dirname + '/step1'));
-  app.use('/step2', express.static(__dirname + '/step2'));
+  app.use(express.static('public'));
 });
 
 // Socket IO listener
