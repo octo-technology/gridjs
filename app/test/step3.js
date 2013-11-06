@@ -10,7 +10,7 @@ describe('Le serveur', function(){
 		emetteur.emit('sendJS', {code: '1+1'});
 		// then
 		recepteur.on('broadcastJS', function(data){
-			//expect(data.code).to.be.equal('1+1');
+			expect(data.code).to.be.equal('1+1');
 			done();
 		});
 	});
