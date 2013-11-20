@@ -17,20 +17,21 @@ describe("L'application", function(){
         exec.trigger('click');
 	});
 
-	it("reçoit le code et l'exécute", function(){
-		var emetteur = io.connect('http://localhost:8000');
+	it("reçoit le code et l'exécute", function(done){
+		var recepteur = io.connect('http://localhost:8000');
 		var getJS = $('#getJS');
-		var hasBeenCalled = false;
 
 		var myTestFunction = function (param){
             expect(param).to.equal(8);
-            hasBeenCalled = true;
+            done();
         };
         window.myTestFunction = myTestFunction;
 
-		emetteur.emit('sendJS', {code: 'myTestFunction(8)'});
+		recepteur.on = function(socket, callback){
+			expect(socket).to.be.equal('broadcastJS');
+			callback({code: 'myTestFunction(8)'});
+		};
 
 		getJS.trigger('click');
-		expect(hasBeenCalled).to.be.true;
 	});
 });
