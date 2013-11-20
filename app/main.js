@@ -1,14 +1,10 @@
 var http = require('http');
 var express = require('express');
-var socketIO = require('socket.io');
 var vm = require('vm');
+var dnode = require('dnode');
 
 var app = express();
 var server = http.createServer(app);
-var io = socketIO.listen(server);
-    io.set('log level', 0);
-//listen on localhost:8000
-server.listen(8000);
 
 app.configure(function () {
   app.use(express.logger('dev'));
@@ -19,13 +15,12 @@ app.configure(function () {
   app.use(express.static('public'));
 });
 
-// Socket IO listener
-io.sockets.on('connection', function (socket) {
-  socket.on('sendJS', function (data) {
-    console.log(data);
-    socket.broadcast.emit('broadcastJS', data);
-  });
-});
+dnode(function (client) {
+    this.sayHello = function (callback) {
+        callback('Hello from Node land');
+        client.sayAnotherMessage('enjoy your day');
+    };
+}).listen(server);
 
 var port = (process.env.PORT ? process.env.PORT : 8000);
 server.listen(port).listen(function () {

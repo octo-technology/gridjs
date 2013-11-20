@@ -1,14 +1,12 @@
-$(function () {
-	var socket = io.connect('http://localhost:8000');
+require(['/js/dnode.js'], function (dnode) {
+	var client = {};
+	client.sayAnotherMessage = function(message) {
+	    document.write(message);
+	};
 
-	$('#execute').click(function () {
-		socket.emit('sendJS', {code: $('#jscode').val()});
-	});
-
-
-	socket.on('broadcastJS', function (data) {
-		$('#getJS').click(function(){
-			eval(data.code);
-		});
+	dnode(client).connect(function (server) {
+	    server.sayHello(function (message) {
+	        document.write(message);
+	    });
 	});
 });
