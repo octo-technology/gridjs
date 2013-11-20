@@ -28,9 +28,14 @@ describe("L'application", function(){
         window.myTestFunction = myTestFunction;
 
 		recepteur.on = function(socket, callback){
-			expect(socket).to.be.equal('broadcastJS');
 			callback({code: 'myTestFunction(8)'});
 		};
+
+		recepteur.on('test', function (data) {
+			$('#getJS').click(function(){
+				eval(data.code);
+			});
+		});
 
 		getJS.trigger('click');
 	});
