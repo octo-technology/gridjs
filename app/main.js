@@ -1,6 +1,5 @@
 var http = require('http');
 var express = require('express');
-var vm = require('vm');
 var dnode = require('dnode');
 
 var app = express();
