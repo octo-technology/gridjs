@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>GridJS : Step 1 test suite</title>
+    <link rel="stylesheet" href="./lib/mocha/mocha.css" type="text/css" media="screen" charset="utf-8">
+    <script type="text/javascript" charset="utf-8" src="lib/mocha/mocha.js"></script>
+    <script type="text/javascript" charset="utf-8" src="lib/chai.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        mocha.setup({ui: 'bdd', ignoreLeaks:true});
+        var expect = chai.expect;
+    </script>
+  </head>
+
+  <body>
+      <textarea id="jscode" name="" rows="10" cols="30"></textarea>
+      <button class="btn btn-danger" id="execute">EXEC</button>
+      <div id="mocha"></div>
+    <script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../js/bootstrap.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../js/client.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="spec/step1.js"></script>
+      <script type="text/javascript" charset="utf-8">
+          mocha.run()
+      </script>
+  </body>
+</html>
+
