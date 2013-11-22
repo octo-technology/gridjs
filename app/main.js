@@ -70,11 +70,15 @@ io.sockets.on('connection', function(socket){
   // Affichage de la session en cours
   socket.emit('sessionID', {sessionID: hs.sessionID});
 
-  socket.on('sendJS', function(data){
-    console.log(data);
+  socket.on('sendJS', function(code){
+    console.log(code);
     // Sélection d'un browser sur lequel envoyer le calcul
     var receiver = getRandClient(clients, socket);
-    receiver.emit('broadcastJS', data);
+    receiver.emit('broadcastJS', {code: code, client: hs.sessionID});
+  });
+
+  socket.on('sendResult', function(data){
+    clients[data.client].emit('hereIsTheResult', data.result);
   });
 });
 
