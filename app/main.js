@@ -51,12 +51,13 @@ var getRandClient = function(clients, emitter)
     var emitterID = emitter.handshake.sessionID;
     var receiverID = emitterID;
     var clientsList = Object.keys(clients);
+    console.log(clientsList)
     if(clientsList.length > 1)
     {
         while(receiverID == emitterID)
            receiverID = getRandInArray(clientsList); 
     }
-
+    console.log(receiverID)
     return clients[receiverID];
 };
 

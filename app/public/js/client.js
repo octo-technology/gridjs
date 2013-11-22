@@ -10,6 +10,7 @@ $(function () {
 	});
 
 	socket.on('broadcastJS', function (data) {
+		alert('DRIIIIING');
 		$('#getJS').click(function(){
 			var result = eval(data.code);
 			socket.emit('sendResult', {result: result, client: data.client});
