@@ -5,6 +5,9 @@ $(function () {
 		socket.emit('sendJS', {code: $('#jscode').val()});
 	});
 
+	socket.on('sessionID', function(data){
+		$('#sessionID').html('sessionID : ' + data.sessionID);
+	});
 
 	socket.on('broadcastJS', function (data) {
 		$('#getJS').click(function(){
