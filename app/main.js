@@ -67,19 +67,29 @@ var clients = {};
 io.sockets.on('connection', function(socket){
   var hs = socket.handshake;
   // Sauvegarde de tous les clients 
-  clients[hs.sessionID] = socket;
+  if(!clients[hs.sessionID])
+  {
+    clients[hs.sessionID] = socket;
+    console.log('Connection : '+hs.sessionID);
+  }
   // Affichage de la session en cours
-  socket.emit('sessionID', {sessionID: hs.sessionID});
+  socket.emit('sessionID', {'sessionID': hs.sessionID});
 
   socket.on('sendJS', function(code){
     console.log(code);
     // Sélection d'un browser sur lequel envoyer le calcul
     var receiver = getRandClient(clients, socket);
-    receiver.emit('broadcastJS', {code: code, client: hs.sessionID});
+    receiver.emit('broadcastJS', {'code': code, 'client': hs.sessionID});
   });
 
   socket.on('sendResult', function(data){
     clients[data.client].emit('hereIsTheResult', data.result);
+  });
+
+  socket.on('disconnect', function(){
+    var hs = socket.handshake;
+    delete clients[hs.sessionID];
+    console.log('Disconnection : '+hs.sessionID);
   });
 });
 
