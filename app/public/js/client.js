@@ -23,7 +23,7 @@ $(function () {
 	});
 
 	socket.on('newProject', function (data) {
-		$('#projects').text("Projects available: "+data.)
+		$('#projects').text("Projects available: "+data)
 	});
 
 	socket.on('hereIsTheResult', function(result){
