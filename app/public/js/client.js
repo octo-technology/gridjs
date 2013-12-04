@@ -18,6 +18,14 @@ $(function () {
 		});
 	});
 
+	socket.on('nbUsers', function (data) {
+		$('#nbUsers').text("Number of connected users: "+data);
+	});
+
+	socket.on('newProject', function (data) {
+		$('#projects').text("Projects available: "+data.)
+	});
+
 	socket.on('hereIsTheResult', function(result){
 		alert(result);
 	});

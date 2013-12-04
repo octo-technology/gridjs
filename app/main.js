@@ -62,6 +62,7 @@ var getRandClient = function(clients, emitter)
 };
 
 var clients = {};
+var projects = {};
 
 // Socket IO listener
 io.sockets.on('connection', function(socket){
@@ -74,9 +75,15 @@ io.sockets.on('connection', function(socket){
   }
   // Affichage de la session en cours
   socket.emit('sessionID', {'sessionID': hs.sessionID});
+  io.sockets.emit('nbUsers', Object.keys(clients).length);
 
   socket.on('sendJS', function(code){
+    if(!projects[hs.sessionID])
+      projects[hs.sessionID] = [];
+    projects[hs.sessionID].push(code);
+
     console.log(code);
+    io.sockets.emit('newProject', projects);
     // Sélection d'un browser sur lequel envoyer le calcul
     var receiver = getRandClient(clients, socket);
     receiver.emit('broadcastJS', {'code': code, 'client': hs.sessionID});
@@ -90,6 +97,7 @@ io.sockets.on('connection', function(socket){
     var hs = socket.handshake;
     delete clients[hs.sessionID];
     console.log('Disconnection : '+hs.sessionID);
+    io.sockets.emit('nbUsers', Object.keys(clients).length);
   });
 });
 
