@@ -76,17 +76,16 @@ io.sockets.on('connection', function(socket){
   // Affichage de la session en cours
   socket.emit('sessionID', {'sessionID': hs.sessionID});
   io.sockets.emit('nbUsers', Object.keys(clients).length);
+  io.sockets.emit('newProject', projects);
+  console.log(projects)
 
-  socket.on('sendJS', function(code){
+  socket.on('sendJS', function(data){
+    console.log(data)
     if(!projects[hs.sessionID])
       projects[hs.sessionID] = [];
-    projects[hs.sessionID].push(code);
+    projects[hs.sessionID].push(data);
 
-    console.log(code);
     io.sockets.emit('newProject', projects);
-    // Sélection d'un browser sur lequel envoyer le calcul
-    var receiver = getRandClient(clients, socket);
-    receiver.emit('broadcastJS', {'code': code, 'client': hs.sessionID});
   });
 
   socket.on('sendResult', function(data){
