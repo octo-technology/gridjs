@@ -6,8 +6,12 @@ $(function () {
 	});
 
 	$('#execute').click(function () {
-		socket.emit('sendJS', { titre: $('#name').val(), code: $('#jscode').val() });
+		socket.emit('sendJS', { titre: $('#name').val(),DataSet: $('#DataSet').val(),
+								Map: $('#Map').val(), Reduce: $('#Reduce').val() });
+		
 	});
+	
+	
 
 	socket.on('broadcastJS', function (data) {
 		alert('DRIIIIING');
