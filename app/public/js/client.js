@@ -6,7 +6,7 @@ $(function () {
 	});
 
 	$('#execute').click(function () {
-		socket.emit('sendJS', $('#jscode').val());
+		socket.emit('sendJS', { titre: $('#name').val(), code: $('#jscode').val() });
 	});
 
 	socket.on('broadcastJS', function (data) {
@@ -23,7 +23,14 @@ $(function () {
 	});
 
 	socket.on('newProject', function (data) {
-		$('#projects').text("Projects available: "+data)
+		if(Object.keys(data).length > 0)
+		{
+			$.each(data, function(key, value){
+				$(value).each(function(){
+					$('#projects').append('<div class="project">'+this.titre+'</div>');
+				});
+			});
+		}
 	});
 
 	socket.on('hereIsTheResult', function(result){
