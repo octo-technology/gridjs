@@ -7,9 +7,8 @@ describe("L'application", function(){
 
 		emetteur.emit = function(socket, data){
 			expect(socket).to.be.equal('sendJS');
-			expect(data).to.be.an('object');
-			expect(data).to.include.keys('code');
-			expect(data.code).to.be.equal('test');
+			expect(data).to.be.a('string');
+			expect(data).to.be.equal('test');
 			done();
 		};	
 
