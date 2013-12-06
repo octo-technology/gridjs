@@ -2,25 +2,61 @@
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title>GridJS : Step 3</title>
+    <title>GridJS : Step 4</title>
     <link rel="stylesheet" href="css/bootstrap.css" type="text/css" media="screen" charset="utf-8">
 
   </head>
 
   <body>
+    <!-- Titre de la page -->
     <div class="row">
-      <div class="col-md-6">
-        <h1>GridJS : Step 3</h1>
+      <div class="col-md-12">
+        <h1>GridJS : Step 4</h1>
       </div>
     </div>
-    <div class="row">
+    <!-- Contenu -->
+    <div id="content" class="row">
+      <!-- Formulaire de soumission -->
       <div class="col-md-6">
-        <p>Collez votre code Javascript ci-dessous</p>
-        <textarea id="jscode" rows="8" cols="40"></textarea>
+
+        <p id="sessionID">Bonjour : </p>
+        <div id="nbUsers"></div>
+
+        <form class="form-horizontal" role="form">
+          <div class="form-group">
+            <label for="name" class="col-sm-3 control-label">Nom de votre projet</label>
+            <div class="col-sm-9">
+              <input type="text" class="form-control" id="name" placeholder="Nom de votre projet"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="DataSet" class="col-sm-3 control-label">Data set</label>
+            <div class="col-sm-9">
+              <textarea class="form-control" id="DataSet" rows="10" placeholder="DataSet"></textarea>
+            </div>
+			<label for="Map" class="col-sm-3 control-label">Map</label>
+            <div class="col-sm-9">
+              <textarea class="form-control" id="Map" rows="10" placeholder="Map"></textarea>
+            </div>
+			<label for="Reduce" class="col-sm-3 control-label">Reduce</label>
+            <div class="col-sm-9">
+              <textarea class="form-control" id="Reduce" rows="10" placeholder="Reduce"></textarea>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+              <div class="btn btn-danger" id="execute">EXEC</div>
+              <div class="btn btn-primary" id="getJS">GETJS</div>
+            </div>
+          </div>
+        </form>
+
         <div class="answer"></div>
-        <br>
-        <button class="btn btn-danger" id="execute">EXEC</button>
-        <button class="btn btn-primary" id="getJS">GETJS</button>
+        
+      </div>
+      <!-- Liste des Projets -->
+      <div id="projects" class="col-md-6">
+          Liste des projets :
       </div>
     </div>
 
