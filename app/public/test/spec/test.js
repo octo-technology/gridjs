@@ -28,29 +28,27 @@ describe("L'application", function(){
         exec.trigger('click');
 	});
 
-	it("ajoute le projet à la liste des projets en cours", function(done){
-		var recepteur = io.connect('http://localhost:8000');
+	it("ajoute le projet à la liste des projets en cours", function(){
+		var projectsList = $('#projects .project');
+		var projectHTML = projectsList.html();
+		var projectID = projectsList.attr('projectID');
 
-		var myTestFunction = function (data){
-			expect(data.id).to.be.a('string');
-			expect(data.title).to.be.a('string');
-			expect(data.id).to.be.equal('007');
-			expect(data.title).to.be.equal('test');
-			$('#projects').append('<div class="project" "projectID"='+data.id+'>'+data.title+'</div>');
-            done();
-        };
-        window.myTestFunction = myTestFunction;
-
-		recepteur.on = function(socket, callback){
-			callback({'id': '007', 'title': 'test'});
-		};
-
-		recepteur.on('newProject', function(data){
-			$('#getJS').click(function(){
-				myTestFunction(data);
-			});
-		});
-
-		$('#getJS').trigger('click');
+		expect(projectsList).to.have.length(1);
+		expect(projectHTML).to.be.equal('test');
+		expect(projectID).to.be.equal('3556498');
 	});
+
+	it("envoie une demande de calcul si on clique sur un projet", function(done){
+		var emetteur = io.connect('http://localhost:8000');
+		var projectsList = $('#projects .project');
+
+		emetteur.emit = function(socket, data){
+			expect(socket).to.be.equal('getChunk');
+			expect(data.userID).to.be.equal(sessionID);
+			expect(data.projectID).to.be.equal('3556498');
+			done();
+		};	
+
+		projectsList.click();
+	});	
 });
