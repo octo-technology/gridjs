@@ -27,27 +27,30 @@ describe("L'application", function(){
         reduce.val('a+b');
         exec.trigger('click');
 	});
-/*
-	it("reçoit le code et l'exécute", function(done){
-		var recepteur = io.connect('http://localhost:8000');
-		var getJS = $('#getJS');
 
-		var myTestFunction = function (param){
-            expect(param).to.equal(8);
+	it("ajoute le projet à la liste des projets en cours", function(done){
+		var recepteur = io.connect('http://localhost:8000');
+
+		var myTestFunction = function (data){
+			expect(data.id).to.be.a('string');
+			expect(data.title).to.be.a('string');
+			expect(data.id).to.be.equal('007');
+			expect(data.title).to.be.equal('test');
+			$('#projects').append('<div class="project" "projectID"='+data.id+'>'+data.title+'</div>');
             done();
         };
         window.myTestFunction = myTestFunction;
 
 		recepteur.on = function(socket, callback){
-			callback({code: 'myTestFunction(8)'});
+			callback({'id': '007', 'title': 'test'});
 		};
 
-		recepteur.on('test', function (data) {
+		recepteur.on('newProject', function(data){
 			$('#getJS').click(function(){
-				eval(data.code);
+				myTestFunction(data);
 			});
 		});
 
-		getJS.trigger('click');
-	}); */
+		$('#getJS').trigger('click');
+	});
 });
