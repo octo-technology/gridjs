@@ -56,13 +56,29 @@ io.sockets.on('connection', function(socket){
 
     socket.on('sendProject', function(data){
         var newProjectID = addProject(data, sessionID);
-        sendChunk(newProjectID, sessionID);
+        sendChunk({'projectID': newProjectID, 'userID': sessionID});
     });
 
     socket.on('getChunk', sendChunk);
 
     socket.on('sendChunkResults', function(data){
-        console.log(data);
+        var project = projects[data.projectData.projectID];
+        var chunksList = project.chunks;
+        var runningChunks = chunksList.runningChunks;
+        var calculatedChunks = chunksList.calculatedChunks;
+        for(var i in runningChunks)
+        {
+            var chunk = runningChunks[i];
+            if(data.projectData.dataSet.compare(chunk))
+            {
+                console.log(i)
+                var calculatedChunk = runningChunks.splice(i,1);
+                calculatedChunks.push(calculatedChunk);
+                break;
+            }
+        }
+        project.results.push(data.results);
+        console.log(project);
     })
 
     socket.on('sendResult', displayResult);
@@ -123,6 +139,7 @@ var addProject = function(data, ownerID){
         project.title = data.title;
         project.functions = {'map': data.map, 'reduce': data.reduce};
         project.chunks = {'availableChunks': chunks, 'runningChunks': [], 'calculatedChunks': []};
+        project.results = [];
 
     io.sockets.emit('newProject', {'id': projectID, 'title': project.title});
     projects[projectID] = project;
@@ -141,7 +158,7 @@ var sendChunk = function(data){
     project.chunks.runningChunks.push(chunk);
     project.contributors.push(userID);
 
-    clients[userID].emit('sendChunk', {'dataSet': chunk, 'map': project.functions.map});
+    clients[userID].emit('sendChunk', {'projectID': projectID, 'dataSet': chunk, 'map': project.functions.map});
 };
 
 var displayResult = function(data){
@@ -171,4 +188,28 @@ String.prototype.hashCode = function(){
         hash = hash & hash; // Convert to 32bit integer
     }
     return hash;
+}
+
+Array.prototype.compare = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].compare(array[i]))
+                return false;
+        }
+        else if (this[i] != array[i]) {
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;
+        }
+    }
+    return true;
 }

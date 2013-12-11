@@ -1,8 +1,8 @@
+var sessionID;
+
 $(function () {
 	// Connection to Socket.IO
 	var socket = io.connect('http://localhost:8000');
-
-	var sessionID;
 
 	// Listeners
 		// UI
@@ -15,13 +15,12 @@ $(function () {
 	socket.on('sendChunk', doTheMaths);
 
 	// Actionners 
-	$('#execute').click(function() {
+	$('#execute').click(function(){
 		socket.emit('sendProject', {'title': $('#name').val(), 'dataSet': $('#dataSet').val(), 'map': $('#map').val(), 'reduce': $('#reduce').val()});
 	});
-
-	$('#project').click(function() {
-		socket.emit('getChunk', {'userID': sessionID, 'projectID': projectID});
-	})
+	$(document).delegate('.project', 'click', function(){
+		socket.emit('getChunk', {'userID': sessionID, 'projectID': $(this).attr('projectID')});
+	});
 });
 
 
@@ -52,7 +51,7 @@ var initProjectsList = function(data) {
 };
 
 var updateProjectsList = function(data) {
-	$('#projects').append('<div class="project" "projectID"='+data.id+'>'+data.title+'</div>');
+	$('#projects').append('<div class="project" projectID="'+data.id+'">'+data.title+'</div>');
 };
 
 var doTheMaths = function(data){
@@ -64,7 +63,7 @@ var doTheMaths = function(data){
 		var result = eval(data.map);
 		results.push(result);
 	}
-	this.emit('sendChunkResults', {'owner': data.owner, 'results': results});
+	this.emit('sendChunkResults', {'projectData': data, 'results': results});
 };
 
 var jsonLength = function(json){
