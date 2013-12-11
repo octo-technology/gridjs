@@ -18,29 +18,27 @@ var MemoryStore = express.session.MemoryStore,
 // Listening on port 8000
 var port = (process.env.PORT ? process.env.PORT : 8000);
 server.listen(port).listen(function () {
-  console.log("Node Server running on port " + port);
+    console.log("Node Server running on port " + port);
 });
 
 // Server Configuration
 app.configure(function () {
-  app.use(express.logger('dev'));
-  app.use(express.favicon());
-  app.use(express.bodyParser());
-  app.use(express.errorHandler());
-  app.use(express.cookieParser());
-  app.use(express.session({store: sessionStore, secret: 'secret', key: 'express.sid'}));
-  app.use(express.static('public'));
+    app.use(express.logger('dev'));
+    app.use(express.favicon());
+    app.use(express.bodyParser());
+    app.use(express.errorHandler());
+    app.use(express.cookieParser());
+    app.use(express.session({store: sessionStore, secret: 'secret', key: 'express.sid'}));
+    app.use(express.static('public'));
 });
 
 // Socket Authentifier
 io.set('authorization', function (data, accept){
-    if (data.headers.cookie) 
-    {
-        data.cookie = parseCookie(data.headers.cookie);
-        data.sessionID = data.cookie.substring(16,40);
-    } 
-    else 
-       return accept('No cookie transmitted.', false);
+    if(!data.headers.cookie)
+        return accept('No cookie transmitted.', false);
+        
+    data.cookie = parseCookie(data.headers.cookie);
+    data.sessionID = data.cookie.substring(16,40);
     // accept the incoming connection
     accept(null, true);
 });
@@ -51,19 +49,19 @@ var projects = {};
 
 // Socket Connection Handling
 io.sockets.on('connection', function(socket){
-  addClient(socket);
-  //getProjects();
+    addClient(socket);
+    //getProjects();
 
-  socket.on('sendJS', function(data){
-    addProject(data, socket);
-  });
+    socket.on('sendJS', function(data){
+        addProject(data, socket);
+    });
 
-  socket.on('sendChunkResults', function(data){
-    console.log(data)
-  })
+    socket.on('sendChunkResults', function(data){
+        console.log(data)
+    })
 
-  socket.on('sendResult', displayResult);
-  socket.on('disconnect', disconnect);
+    socket.on('sendResult', displayResult);
+    socket.on('disconnect', disconnect);
 });
 
 
@@ -142,15 +140,6 @@ var disconnect = function(){
     delete clients[sessionID];
     console.log('Disconnection : '+sessionID);
     io.sockets.emit('nbUsers', Object.keys(clients).length);
-}
-
-var testPourPlusTard = function(){
-
-    // Parallel
-    var p = new Parallel(dataSet);
-    function log() { console.log(arguments); };
-
-    p.map(map).reduce(reduce).then(log);
 }
 
 var jsonLength = function(json){
