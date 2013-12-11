@@ -55,7 +55,6 @@ io.sockets.on('connection', function(socket){
     socket.emit('sendProjects', projects);
 
     socket.on('sendProject', function(data){
-        console.log('bite')
         var newProjectID = addProject(data, sessionID);
         sendChunk(newProjectID, sessionID);
     });
