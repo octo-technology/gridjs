@@ -6,20 +6,22 @@ $(function () {
 	});
 
 	$('#execute').click(function () {
-		socket.emit('sendJS', { titre: $('#name').val(),DataSet: $('#DataSet').val(),
-								Map: $('#Map').val(), Reduce: $('#Reduce').val() });
-		
+		socket.emit('sendJS', { titre: $('#name').val(), dataSet: $('#DataSet').val(),
+								map: $('#Map').val(), reduce: $('#Reduce').val() });
 	});
 	
 	
 
-	socket.on('broadcastJS', function (data) {
-		alert('DRIIIIING');
-		$('#getJS').click(function(){
-			var result = eval(data.code);
-			socket.emit('sendResult', {result: result, client: data.client});
-			alert('Traitement effectué');
-		});
+	socket.on('sendChunk', function(data){
+		console.log(data);
+		var results = [];
+		for(var index in data.dataSet)
+		{
+			var a = data.dataSet[index];
+			var result = eval(data.map);
+			results.push(result);
+		}
+		socket.emit('sendChunkResults', {'owner': data.owner, 'results': results});
 	});
 
 	socket.on('nbUsers', function (data) {

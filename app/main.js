@@ -1,19 +1,27 @@
-var http = require('http');
-var express = require('express');
-var socketIO = require('socket.io');
-var parseCookie = require('connect').utils.parseSignedCookie;
-var Session = require('connect').middleware.session.Session;
+// Node Modules
+var http = require('http'),
+    express = require('express'),
+    socketIO = require('socket.io'),
+    parseCookie = require('connect').utils.parseSignedCookie,
+    Session = require('connect').middleware.session.Session,
+    vm = require('vm');
 
-
-var app = express();
-var server = http.createServer(app);
+// Creating Express Server
+var app = express(),
+    server = http.createServer(app);
+// Sockets Listener
 var io = socketIO.listen(server);
     io.set('log level', 0);
-var MemoryStore = express.session.MemoryStore;
-var sessionStore = new MemoryStore();
-//listen on localhost:8000
-server.listen(8000);
+// Session Storage
+var MemoryStore = express.session.MemoryStore,
+    sessionStore = new MemoryStore();
+// Listening on port 8000
+var port = (process.env.PORT ? process.env.PORT : 8000);
+server.listen(port).listen(function () {
+  console.log("Node Server running on port " + port);
+});
 
+// Server Configuration
 app.configure(function () {
   app.use(express.logger('dev'));
   app.use(express.favicon());
@@ -24,15 +32,12 @@ app.configure(function () {
   app.use(express.static('public'));
 });
 
-// Socket IO Authentifier
-io.set('authorization', function (data, accept) {
+// Socket Authentifier
+io.set('authorization', function (data, accept){
     if (data.headers.cookie) 
     {
         data.cookie = parseCookie(data.headers.cookie);
         data.sessionID = data.cookie.substring(16,40);
-        // save the session store to the data object 
-        // (as required by the Session constructor)
-        data.sessionStore = sessionStore;
     } 
     else 
        return accept('No cookie transmitted.', false);
@@ -40,14 +45,36 @@ io.set('authorization', function (data, accept) {
     accept(null, true);
 });
 
+// App's Data
+var clients = {};
+var projects = {};
 
-var getRandInArray = function(array)
-{
+// Socket Connection Handling
+io.sockets.on('connection', function(socket){
+  addClient(socket);
+  //getProjects();
+
+  socket.on('sendJS', function(data){
+    addProject(data, socket);
+  });
+
+  socket.on('sendChunkResults', function(data){
+    console.log(data)
+  })
+
+  socket.on('sendResult', displayResult);
+  socket.on('disconnect', disconnect);
+});
+
+
+///////////////////////////////////////
+// USEFUL METHODS
+///////////////////////////////////////
+var getRandInArray = function(array){
    return array[Math.floor(Math.random()*array.length)];
 };
 
-var getRandClient = function(clients, emitter)
-{
+var getRandClient = function(clients, emitter){
     var emitterID = emitter.handshake.sessionID;
     var receiverID = emitterID;
     var clientsList = Object.keys(clients);
@@ -61,46 +88,71 @@ var getRandClient = function(clients, emitter)
     return clients[receiverID];
 };
 
-var clients = {};
-var projects = {};
+var addClient = function(socket){
+    var sessionID = getSessionID(socket);
 
-// Socket IO listener
-io.sockets.on('connection', function(socket){
-  var hs = socket.handshake;
-  // Sauvegarde de tous les clients 
-  if(!clients[hs.sessionID])
-  {
-    clients[hs.sessionID] = socket;
-    console.log('Connection : '+hs.sessionID);
-  }
-  // Affichage de la session en cours
-  socket.emit('sessionID', {'sessionID': hs.sessionID});
-  io.sockets.emit('nbUsers', Object.keys(clients).length);
-  io.sockets.emit('newProject', projects);
-  console.log(projects)
+    if(clients[sessionID]) return;
 
-  socket.on('sendJS', function(data){
-    console.log(data)
-    if(!projects[hs.sessionID])
-      projects[hs.sessionID] = [];
-    projects[hs.sessionID].push(data);
+    clients[sessionID] = socket;
+    socket.emit('sessionID', {'sessionID': sessionID});
+    console.log('Connection : '+sessionID);
+};
+
+var getSessionID = function(socket){
+    return socket.handshake.sessionID;
+}
+
+var displayProjects = function(){
+    io.sockets.emit('newProject', projects);
+}; 
+
+var addProject = function(data, socket){
+    var currentProjects = projects[socket.handshake.sessionID];
+    if(!currentProjects)
+        currentProjects = [];
+    currentProjects.push(data);
 
     io.sockets.emit('newProject', projects);
-  });
 
-  socket.on('sendResult', function(data){
+    var dataSet = vm.runInNewContext(data.dataSet),
+        map = data.map,
+        reduce = data.reduce;
+
+    var dataSetLength = dataSet.length;
+    var chunkLength = dataSetLength/jsonLength(clients);
+    var counter = 0;
+
+    for(var id in clients)
+    {
+        var clientSocket = clients[id];
+        var chunkDataSet = dataSet.slice(counter, counter+chunkLength);
+        console.log('counter:'+counter);
+        console.log('dataSet:'+chunkDataSet)
+        clientSocket.emit('sendChunk', {'owner': socket.handshake.sessionID, 'dataSet': chunkDataSet, 'map': map});
+        counter += chunkLength;
+    };       
+}
+
+var displayResult = function(data){
     clients[data.client].emit('hereIsTheResult', data.result);
-  });
+}
 
-  socket.on('disconnect', function(){
-    var hs = socket.handshake;
-    delete clients[hs.sessionID];
-    console.log('Disconnection : '+hs.sessionID);
+var disconnect = function(){
+    var sessionID = this.handshake.sessionID;
+    delete clients[sessionID];
+    console.log('Disconnection : '+sessionID);
     io.sockets.emit('nbUsers', Object.keys(clients).length);
-  });
-});
+}
 
-var port = (process.env.PORT ? process.env.PORT : 8000);
-server.listen(port).listen(function () {
-  console.log("Node Server running on port " + port);
-});
+var testPourPlusTard = function(){
+
+    // Parallel
+    var p = new Parallel(dataSet);
+    function log() { console.log(arguments); };
+
+    p.map(map).reduce(reduce).then(log);
+}
+
+var jsonLength = function(json){
+    return Object.keys(json).length;
+}
