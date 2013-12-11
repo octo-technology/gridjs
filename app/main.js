@@ -50,7 +50,12 @@ var projects = {};
 // Socket Connection Handling
 io.sockets.on('connection', function(socket){
     addClient(socket);
-    //getProjects();
+    
+    // Send current projects
+    var currentProjects = projects[socket.handshake.sessionID];
+    if(!currentProjects)
+        currentProjects = [];
+    socket.emit('sendProjects', projects);
 
     socket.on('sendJS', function(data){
         addProject(data, socket);
@@ -110,7 +115,7 @@ var addProject = function(data, socket){
         currentProjects = [];
     currentProjects.push(data);
 
-    io.sockets.emit('newProject', projects);
+    io.sockets.emit('newProject', data);
 
     var dataSet = vm.runInNewContext(data.dataSet),
         map = data.map,
