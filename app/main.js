@@ -49,15 +49,19 @@ var projects = {};
 
 // Socket Connection Handling
 io.sockets.on('connection', function(socket){
-    addClient(socket);
-    //getProjects();
+    var sessionID = getSessionID(socket);
 
-    socket.on('sendJS', function(data){
-        addProject(data, socket);
+    addClient(socket);
+
+    socket.on('sendProject', function(data){
+        var newProjectID = addProject(data, sessionID);
+        sendChunk(newProjectID, sessionID);
     });
 
+    socket.on('getChunk', sendChunk);
+
     socket.on('sendChunkResults', function(data){
-        console.log(data)
+        console.log(data);
     })
 
     socket.on('sendResult', displayResult);
@@ -66,7 +70,7 @@ io.sockets.on('connection', function(socket){
 
 
 ///////////////////////////////////////
-// USEFUL METHODS
+// METHODS
 ///////////////////////////////////////
 var getRandInArray = function(array){
    return array[Math.floor(Math.random()*array.length)];
@@ -104,32 +108,40 @@ var displayProjects = function(){
     io.sockets.emit('newProject', projects);
 }; 
 
-var addProject = function(data, socket){
-    var currentProjects = projects[socket.handshake.sessionID];
-    if(!currentProjects)
-        currentProjects = [];
-    currentProjects.push(data);
+var addProject = function(data, ownerID){
+    var dataSet = vm.runInNewContext(data.dataSet);
+    if(!Array.isArray(dataSet))
+        console.log('not an Array !'); // Cas d'erreur à traiter
 
-    io.sockets.emit('newProject', projects);
+    var chunkLength = 2;
+    var chunks = [];
+    while(dataSet.length > 0) 
+        chunks.push(dataSet.splice(0,chunkLength));
 
-    var dataSet = vm.runInNewContext(data.dataSet),
-        map = data.map,
-        reduce = data.reduce;
+    var projectID = new String(data.title).hashCode();
 
-    var dataSetLength = dataSet.length;
-    var chunkLength = dataSetLength/jsonLength(clients);
-    var counter = 0;
+    var project = {};
+        project.ownerID = ownerID;
+        project.contributors = [];
+        project.title = data.title;
+        project.functions = {'map': data.map, 'reduce': data.reduce};
+        project.chunks = {'availableChunks': chunks, 'runningChunks': [], 'calculatedChunks': []};
 
-    for(var id in clients)
-    {
-        var clientSocket = clients[id];
-        var chunkDataSet = dataSet.slice(counter, counter+chunkLength);
-        console.log('counter:'+counter);
-        console.log('dataSet:'+chunkDataSet)
-        clientSocket.emit('sendChunk', {'owner': socket.handshake.sessionID, 'dataSet': chunkDataSet, 'map': map});
-        counter += chunkLength;
-    };       
+    io.sockets.emit('newProject', {'id': projectID, 'title': project.title});
+    projects[projectID] = project;
+
+    return projectID;
 }
+
+var sendChunk = function(data){
+    var project = projects[data.projectID];
+    var chunk = project.chunks.availableChunks.splice(0,1);
+    
+    project.chunks.runningChunks.push(chunk);
+    project.contributors.push(data.sessionID);
+
+    socket.emit('sendChunk', {'dataSet': chunk, 'map': project.functions.map});
+};
 
 var displayResult = function(data){
     clients[data.client].emit('hereIsTheResult', data.result);
@@ -144,4 +156,18 @@ var disconnect = function(){
 
 var jsonLength = function(json){
     return Object.keys(json).length;
+}
+
+String.prototype.hashCode = function(){
+    if (Array.prototype.reduce){
+        return this.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
+    } 
+    var hash = 0;
+    if (this.length === 0) return hash;
+    for (var i = 0; i < this.length; i++) {
+        var character  = this.charCodeAt(i);
+        hash  = ((hash<<5)-hash)+character;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 }

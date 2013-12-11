@@ -15,11 +15,15 @@ $(function () {
 
 	// Actionners 
 	$('#execute').click(function() {
-		socket.emit('sendJS', { titre: $('#name').val(), dataSet: $('#DataSet').val(), map: $('#Map').val(), reduce: $('#Reduce').val() });
+		socket.emit('sendProject', {title: $('#name').val(), dataSet: $('#DataSet').val(), map: $('#Map').val(), reduce: $('#Reduce').val()});
 	});
 });
 
 
+
+///////////////////////////////////////
+// METHODS
+///////////////////////////////////////
 var displaySessionID = function(data){
 	$('#sessionID').text('sessionID : ' + data.sessionID);
 };
