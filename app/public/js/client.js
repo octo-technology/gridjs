@@ -16,11 +16,11 @@ $(function () {
 
 	// Actionners 
 	$('#execute').click(function() {
-		socket.emit('sendProject', {title: $('#name').val(), dataSet: $('#DataSet').val(), map: $('#Map').val(), reduce: $('#Reduce').val()});
+		socket.emit('sendProject', {'title': $('#name').val(), 'dataSet': $('#dataSet').val(), 'map': $('#map').val(), 'reduce': $('#reduce').val()});
 	});
 
 	$('#project').click(function() {
-		socket.emit('getChunk', { idUser: sessionID, idProject: projectID });
+		socket.emit('getChunk', {'userID': sessionID, 'projectID': projectID});
 	})
 });
 
@@ -43,18 +43,16 @@ var displayResult =  function(result){
 };
 
 var initProjectsList = function(data) {
-	if(Object.keys(data).length > 0)
+	if(jsonLength(data) > 0)
 	{
 		$.each(data, function(key, value){
-			$(value).each(function(){
-				$('#projects').append('<div class="project" "projectID"='+this.id+'>'+this.titre+'</div>');
-			});
+			updateProjectsList({'id': key, 'title': value.title});
 		});
 	}
 };
 
 var updateProjectsList = function(data) {
-	$('#projects').append('<div class="project" "projectID"='+data.id+'>'+data.titre+'</div>');
+	$('#projects').append('<div class="project" "projectID"='+data.id+'>'+data.title+'</div>');
 };
 
 var doTheMaths = function(data){
@@ -66,5 +64,9 @@ var doTheMaths = function(data){
 		var result = eval(data.map);
 		results.push(result);
 	}
-	socket.emit('sendChunkResults', {'owner': data.owner, 'results': results});
+	this.emit('sendChunkResults', {'owner': data.owner, 'results': results});
 };
+
+var jsonLength = function(json){
+    return Object.keys(json).length;
+}

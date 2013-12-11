@@ -52,8 +52,10 @@ io.sockets.on('connection', function(socket){
     var sessionID = getSessionID(socket);
 
     addClient(socket);
+    socket.emit('sendProjects', projects);
 
     socket.on('sendProject', function(data){
+        console.log('bite')
         var newProjectID = addProject(data, sessionID);
         sendChunk(newProjectID, sessionID);
     });
@@ -104,10 +106,6 @@ var getSessionID = function(socket){
     return socket.handshake.sessionID;
 }
 
-var displayProjects = function(){
-    io.sockets.emit('newProject', projects);
-}; 
-
 var addProject = function(data, ownerID){
     var dataSet = vm.runInNewContext(data.dataSet);
     if(!Array.isArray(dataSet))
@@ -134,13 +132,17 @@ var addProject = function(data, ownerID){
 }
 
 var sendChunk = function(data){
-    var project = projects[data.projectID];
-    var chunk = project.chunks.availableChunks.splice(0,1);
+    var projectID = data.projectID;
+    var userID = data.userID;
+    
+    var project = projects[projectID];
+    console.log(project)
+    var chunk = project.chunks.availableChunks.splice(0,1)[0];
     
     project.chunks.runningChunks.push(chunk);
-    project.contributors.push(data.sessionID);
+    project.contributors.push(userID);
 
-    socket.emit('sendChunk', {'dataSet': chunk, 'map': project.functions.map});
+    clients[userID].emit('sendChunk', {'dataSet': chunk, 'map': project.functions.map});
 };
 
 var displayResult = function(data){
