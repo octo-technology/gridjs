@@ -1,71 +1,36 @@
-var sessionID;
-
-
 $(function () {
-  var dnode = require('dnode');
-  var shoe = require('shoe');
+	var dnode = require('dnode');
+	var shoe = require('shoe');
+	var remote;
 
-  var d = dnode({
-    newProject: updateProjectsList,
-    sendProjects: initProjectsList
-  });
-  var remote;
-  d.on('remote', function(r) {
-    remote = r;
-    remote.echo('Hello World', function (response) {
-      console.log('got', response);
-    })
-  });
+	var d = dnode({
+		newProject: updateProjectsList,
+		sendProjects: initProjectsList,
+		sendClients: displayNbUsers
+	});
 
-  d.pipe(shoe('shoe')).pipe(d);
+	d.on('remote', function(r) {
+		remote = r;
+	});
 
+	d.pipe(shoe('shoe')).pipe(d);
 
 	$('#execute').click(function(){
-    var project = {
-      'title': $('#name').val(),
-      'dataSet': $('#dataSet').val(),
-      'map': $('#map').val(),
-      'reduce': $('#reduce').val()
-    }
+	    var project = {
+			'title': $('#name').val(),
+			'dataSet': $('#dataSet').val(),
+			'map': $('#map').val(),
+			'reduce': $('#reduce').val()
+	    };
 		remote.createProject(project, function () {
-      alert('project created');
-    });
+			remote.getChunk(project.title, gotChunk);
+	    });
 	});
 
 	$(document).delegate('.project', 'click', function() {
-    remote.getChunk($(this).text(), function (data, callback) {
-      if(!data) return;
-      console.log('calculating chunk', data);
-      var res = doTheMaths(data);
-      callback(res);
-    });
-	});
-})
-
-$(function () {
-	// Connection to Socket.IO
-	var socket = io.connect('http://localhost:8000');
-
-	// Listeners
-		// UI
-	socket.on('sessionID', displaySessionID);
-	socket.on('nbUsers', displayUsers);
-	socket.on('sendProjects', initProjectsList);
-	socket.on('newProject', updateProjectsList);
-	socket.on('hereIsTheResult', displayResult);
-		// Calculations
-	socket.on('sendChunk', doTheMaths);
-
-	// Actionners 
-	$('#execute').click(function(){
-		socket.emit('sendProject', {'title': $('#name').val(), 'dataSet': $('#dataSet').val(), 'map': $('#map').val(), 'reduce': $('#reduce').val()});
-	});
-	$(document).delegate('.project', 'click', function(){
-		socket.emit('getChunk', {'userID': sessionID, 'projectID': $(this).attr('projectID')});
+	    remote.getChunk($(this).text(), gotChunk);
 	});
 });
-
-
 
 ///////////////////////////////////////
 // METHODS
@@ -75,7 +40,7 @@ var displaySessionID = function(data){
 	sessionID = data.sessionID;
 };
 
-var displayUsers = function(data){
+var displayNbUsers = function(data){
 	$('#nbUsers').text("Number of connected users: "+data);
 };
 
@@ -111,3 +76,10 @@ var doTheMaths = function(data){
 var jsonLength = function(json){
     return Object.keys(json).length;
 }
+
+var gotChunk = function (data, callback) {
+	if(!data) return;
+	console.log('calculating chunk', data);
+	var res = doTheMaths(data);
+	callback(res);
+};

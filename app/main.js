@@ -2,39 +2,42 @@
 // Node Modules
 var http = require('http'),
     express = require('express'),
-    socketIO = require('socket.io'),
-    parseCookie = require('connect').utils.parseSignedCookie,
-    Session = require('connect').middleware.session.Session,
-    vm = require('vm');
-var shoe = require('shoe');
-var dnode = require('dnode');
+    vm = require('vm'),
+    shoe = require('shoe'),
+    dnode = require('dnode');
 
 // Creating Express Server
 var app = express(),
     server = http.createServer(app);
-// Sockets Listener
-//var io = socketIO.listen(server);
-    //io.set('log level', 0);
-// Session Storage
-var MemoryStore = express.session.MemoryStore,
-    sessionStore = new MemoryStore();
 // Listening on port 8000
 var port = (process.env.PORT ? process.env.PORT : 8000);
+server.listen(port).listen(function (){
+    console.log("Node Server running on port " + port);
+});
 
+// Server Configuration
+app.configure(function () {
+    app.use(express.logger('dev'));
+    app.use(express.favicon());
+    app.use(express.bodyParser());
+    app.use(express.errorHandler());
+    app.use(express.static('public'));
+});
+
+// App's Data
+var projects = {};
 var clients = [];
+
 var shoeServer = shoe(function (stream) {
   var remote;
   var d = dnode({
-    echo: function (param, callback) {
-      return callback(param);
-    },
     createProject: function (project, callback) {
       addProject(project);
       console.log('projects', Object.keys(projects));
       callback();
       clients.forEach(function (client) {
         client.newProject(project);
-      })
+      });
     },
     getChunk: function (projectName, calculate) {
       var project = projects[projectName];
@@ -51,7 +54,9 @@ var shoeServer = shoe(function (stream) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
         var original = chunk;
-        project.results.push(calculated);
+        var reductedResult = reduceThis(project.functions.reduce, calculated);
+        console.log(reductedResult)
+        project.results.push(reductedResult);
         project.chunks.calculatedChunks.push(original);
         var i = project.chunks.runningChunks.indexOf(original);
         project.chunks.runningChunks.splice(i, 1);
@@ -63,50 +68,25 @@ var shoeServer = shoe(function (stream) {
     remote = r;
     clients.push(remote);
     remote.sendProjects(projects);
+    broadcast('sendClients', clients.length);
+  });
+  d.on('end', function(){
+    var idRemote = clients.indexOf(remote);
+    clients.splice(idRemote, 1);
+    broadcast('sendClients', clients.length);
   });
   d.pipe(stream).pipe(d);
 });
 
 shoeServer.install(server, '/shoe');
 
-server.listen(port).listen(function () {
-    console.log("Node Server running on port " + port);
-});
-
-// Server Configuration
-app.configure(function () {
-    app.use(express.logger('dev'));
-    app.use(express.favicon());
-    app.use(express.bodyParser());
-    app.use(express.errorHandler());
-    app.use(express.cookieParser());
-    app.use(express.session({store: sessionStore, secret: 'secret', key: 'express.sid'}));
-    app.use(express.static('public'));
-});
-
-// App's Data
-var projects = {};
-
-
 ///////////////////////////////////////
 // METHODS
 ///////////////////////////////////////
-var getRandInArray = function(array){
-   return array[Math.floor(Math.random()*array.length)];
-};
-
-var getRandClient = function(clients, emitter){
-    var emitterID = emitter.handshake.sessionID;
-    var receiverID = emitterID;
-    var clientsList = Object.keys(clients);
-    console.log(clientsList)
-    if(clientsList.length > 1)
-    {
-        while(receiverID == emitterID)
-           receiverID = getRandInArray(clientsList); 
-    }
-    console.log(receiverID)
-    return clients[receiverID];
+var broadcast = function(callback, params){
+    clients.forEach(function (client) {
+        client[callback](params);
+    });
 };
 
 var addClient = function(socket){
@@ -175,40 +155,13 @@ var jsonLength = function(json){
     return Object.keys(json).length;
 }
 
-String.prototype.hashCode = function(){
-    if (Array.prototype.reduce){
-        return this.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
-    } 
-    var hash = 0;
-    if (this.length === 0) return hash;
-    for (var i = 0; i < this.length; i++) {
-        var character  = this.charCodeAt(i);
-        hash  = ((hash<<5)-hash)+character;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash;
-}
+var reduceThis = function(fn, results){
+    if(results.length == 1) return results[0];
 
-Array.prototype.compare = function (array) {
-    // if the other array is a falsy value, return
-    if (!array)
-        return false;
+    var a = results.shift();
+    var b = results.shift();
+    var reducted = eval(fn);
 
-    // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
-
-    for (var i = 0, l=this.length; i < l; i++) {
-        // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].compare(array[i]))
-                return false;
-        }
-        else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-        }
-    }
-    return true;
+    results.unshift(reducted);
+    return reduceThis(fn, results);
 }
