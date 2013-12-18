@@ -1,5 +1,47 @@
 var sessionID;
 
+
+$(function () {
+  var dnode = require('dnode');
+  var shoe = require('shoe');
+
+  var d = dnode({
+    newProject: updateProjectsList,
+    sendProjects: initProjectsList
+  });
+  var remote;
+  d.on('remote', function(r) {
+    remote = r;
+    remote.echo('Hello World', function (response) {
+      console.log('got', response);
+    })
+  });
+
+  d.pipe(shoe('shoe')).pipe(d);
+
+
+	$('#execute').click(function(){
+    var project = {
+      'title': $('#name').val(),
+      'dataSet': $('#dataSet').val(),
+      'map': $('#map').val(),
+      'reduce': $('#reduce').val()
+    }
+		remote.createProject(project, function () {
+      alert('project created');
+    });
+	});
+
+	$(document).delegate('.project', 'click', function() {
+    remote.getChunk($(this).text(), function (data, callback) {
+      if(!data) return;
+      console.log('calculating chunk', data);
+      var res = doTheMaths(data);
+      callback(res);
+    });
+	});
+})
+
 $(function () {
 	// Connection to Socket.IO
 	var socket = io.connect('http://localhost:8000');
@@ -63,8 +105,8 @@ var doTheMaths = function(data){
 		var result = eval(data.map);
 		results.push(result);
 	}
-	this.emit('sendChunkResults', {'projectData': data, 'results': results});
-};
+	return results;
+}
 
 var jsonLength = function(json){
     return Object.keys(json).length;

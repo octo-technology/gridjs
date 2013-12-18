@@ -1,3 +1,4 @@
+
 // Node Modules
 var http = require('http'),
     express = require('express'),
@@ -5,18 +6,69 @@ var http = require('http'),
     parseCookie = require('connect').utils.parseSignedCookie,
     Session = require('connect').middleware.session.Session,
     vm = require('vm');
+var shoe = require('shoe');
+var dnode = require('dnode');
 
 // Creating Express Server
 var app = express(),
     server = http.createServer(app);
 // Sockets Listener
-var io = socketIO.listen(server);
-    io.set('log level', 0);
+//var io = socketIO.listen(server);
+    //io.set('log level', 0);
 // Session Storage
 var MemoryStore = express.session.MemoryStore,
     sessionStore = new MemoryStore();
 // Listening on port 8000
 var port = (process.env.PORT ? process.env.PORT : 8000);
+
+var clients = [];
+var shoeServer = shoe(function (stream) {
+  var remote;
+  var d = dnode({
+    echo: function (param, callback) {
+      return callback(param);
+    },
+    createProject: function (project, callback) {
+      addProject(project);
+      console.log('projects', Object.keys(projects));
+      callback();
+      clients.forEach(function (client) {
+        client.newProject(project);
+      })
+    },
+    getChunk: function (projectName, calculate) {
+      var project = projects[projectName];
+      var chunk = project.chunks.availableChunks.shift();
+      if(!chunk) return calculate();
+      project.contributors.push(remote);
+      project.chunks.runningChunks.push(chunk);
+      var data = {
+        'projectID': projectName,
+        'dataSet': chunk,
+        'map': project.functions.map
+      }
+      calculate(data, function (result) {
+        console.log('result for', chunk, 'is', result);
+        var calculated = result;
+        var original = chunk;
+        project.results.push(calculated);
+        project.chunks.calculatedChunks.push(original);
+        var i = project.chunks.runningChunks.indexOf(original);
+        project.chunks.runningChunks.splice(i, 1);
+        console.log('project updated', project);
+      });
+    }
+  })
+  d.on('remote', function(r) {
+    remote = r;
+    clients.push(remote);
+    remote.sendProjects(projects);
+  });
+  d.pipe(stream).pipe(d);
+});
+
+shoeServer.install(server, '/shoe');
+
 server.listen(port).listen(function () {
     console.log("Node Server running on port " + port);
 });
@@ -32,58 +84,8 @@ app.configure(function () {
     app.use(express.static('public'));
 });
 
-// Socket Authentifier
-io.set('authorization', function (data, accept){
-    if(!data.headers.cookie)
-        return accept('No cookie transmitted.', false);
-        
-    data.cookie = parseCookie(data.headers.cookie);
-    data.sessionID = data.cookie.substring(16,40);
-    // accept the incoming connection
-    accept(null, true);
-});
-
 // App's Data
-var clients = {};
 var projects = {};
-
-// Socket Connection Handling
-io.sockets.on('connection', function(socket){
-    var sessionID = getSessionID(socket);
-
-    addClient(socket);
-    socket.emit('sendProjects', projects);
-
-    socket.on('sendProject', function(data){
-        var newProjectID = addProject(data, sessionID);
-        sendChunk({'projectID': newProjectID, 'userID': sessionID});
-    });
-
-    socket.on('getChunk', sendChunk);
-
-    socket.on('sendChunkResults', function(data){
-        var project = projects[data.projectData.projectID];
-        var chunksList = project.chunks;
-        var runningChunks = chunksList.runningChunks;
-        var calculatedChunks = chunksList.calculatedChunks;
-        for(var i in runningChunks)
-        {
-            var chunk = runningChunks[i];
-            if(data.projectData.dataSet.compare(chunk))
-            {
-                console.log(i)
-                var calculatedChunk = runningChunks.splice(i,1);
-                calculatedChunks.push(calculatedChunk);
-                break;
-            }
-        }
-        project.results.push(data.results);
-        console.log(project);
-    })
-
-    socket.on('sendResult', displayResult);
-    socket.on('disconnect', disconnect);
-});
 
 
 ///////////////////////////////////////
@@ -131,7 +133,7 @@ var addProject = function(data, ownerID){
     while(dataSet.length > 0) 
         chunks.push(dataSet.splice(0,chunkLength));
 
-    var projectID = new String(data.title).hashCode();
+    var projectID = data.title;
 
     var project = {};
         project.ownerID = ownerID;
@@ -141,10 +143,7 @@ var addProject = function(data, ownerID){
         project.chunks = {'availableChunks': chunks, 'runningChunks': [], 'calculatedChunks': []};
         project.results = [];
 
-    io.sockets.emit('newProject', {'id': projectID, 'title': project.title});
     projects[projectID] = project;
-
-    return projectID;
 }
 
 var sendChunk = function(data){
@@ -153,7 +152,7 @@ var sendChunk = function(data){
     
     var project = projects[projectID];
     console.log(project)
-    var chunk = project.chunks.availableChunks.splice(0,1)[0];
+    var chunk = project.chunks.availableChunks.shift();
     
     project.chunks.runningChunks.push(chunk);
     project.contributors.push(userID);
