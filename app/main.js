@@ -34,8 +34,10 @@ app.configure(function () {
 
 // Socket Authentifier
 io.set('authorization', function (data, accept){
-    if(!data.headers.cookie)
+    if(!data.headers.cookie) 
+    {
         return accept('No cookie transmitted.', false);
+    }
         
     data.cookie = parseCookie(data.headers.cookie);
     data.sessionID = data.cookie.substring(16,40);
@@ -69,9 +71,9 @@ io.sockets.on('connection', function(socket){
         for(var i in runningChunks)
         {
             var chunk = runningChunks[i];
-            if(data.projectData.dataSet.compare(chunk))
+            var isMyChunk = compare(data.projectData.dataSet, chunk);
+            if(isMyChunk)
             {
-                console.log(i)
                 var calculatedChunk = runningChunks.splice(i,1);
                 calculatedChunks.push(calculatedChunk);
                 break;
@@ -79,7 +81,7 @@ io.sockets.on('connection', function(socket){
         }
         project.results.push(data.results);
         console.log(project);
-    })
+    });
 
     socket.on('sendResult', displayResult);
     socket.on('disconnect', disconnect);
@@ -101,7 +103,9 @@ var getRandClient = function(clients, emitter){
     if(clientsList.length > 1)
     {
         while(receiverID == emitterID)
-           receiverID = getRandInArray(clientsList); 
+        {
+            receiverID = getRandInArray(clientsList); 
+        }
     }
     console.log(receiverID)
     return clients[receiverID];
@@ -128,8 +132,10 @@ var addProject = function(data, ownerID){
 
     var chunkLength = 2;
     var chunks = [];
-    while(dataSet.length > 0) 
+    while(dataSet.length > 0)
+    {
         chunks.push(dataSet.splice(0,chunkLength));
+    }
 
     var projectID = new String(data.title).hashCode();
 
@@ -177,12 +183,14 @@ var jsonLength = function(json){
 }
 
 String.prototype.hashCode = function(){
-    if (Array.prototype.reduce){
+    if (Array.prototype.reduce)
+    {
         return this.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0);              
     } 
     var hash = 0;
     if (this.length === 0) return hash;
-    for (var i = 0; i < this.length; i++) {
+    for(var i = 0; i < this.length; i++)
+    {
         var character  = this.charCodeAt(i);
         hash  = ((hash<<5)-hash)+character;
         hash = hash & hash; // Convert to 32bit integer
@@ -190,23 +198,24 @@ String.prototype.hashCode = function(){
     return hash;
 }
 
-Array.prototype.compare = function (array) {
+var compare = function(array, arrayBis){
     // if the other array is a falsy value, return
-    if (!array)
-        return false;
+    if(!array) return false;
 
     // compare lengths - can save a lot of time
-    if (this.length != array.length)
-        return false;
+    if(arrayBis.length != array.length) return false;
 
-    for (var i = 0, l=this.length; i < l; i++) {
+    for(var i = 0, l=arrayBis.length; i < l; i++)
+    {
         // Check if we have nested arrays
-        if (this[i] instanceof Array && array[i] instanceof Array) {
+        if(arrayBis[i] instanceof Array && array[i] instanceof Array) 
+        {
             // recurse into the nested arrays
-            if (!this[i].compare(array[i]))
+            if (!compare(array[i], arrayBis[i]))
                 return false;
         }
-        else if (this[i] != array[i]) {
+        else if(arrayBis[i] != array[i])
+        {
             // Warning - two different object instances will never be equal: {x:20} != {x:20}
             return false;
         }
