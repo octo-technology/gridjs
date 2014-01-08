@@ -1,12 +1,15 @@
+var remote;
+
 $(function () {
 	var dnode = require('dnode');
 	var shoe = require('shoe');
-	var remote;
 
 	var d = dnode({
 		newProject: updateProjectsList,
 		sendProjects: initProjectsList,
-		sendClients: displayNbUsers
+		sendClients: displayNbUsers,
+		sendChunk: sendChunk,
+		scriptIsOver: scriptIsOver
 	});
 
 	d.on('remote', function(r) {
@@ -28,7 +31,7 @@ $(function () {
 	});
 
 	$(document).delegate('.project', 'click', function() {
-	    remote.getChunk($(this).text(), gotChunk);
+		sendChunk($(this).text());
 	});
 });
 
@@ -58,8 +61,13 @@ var initProjectsList = function(data) {
 };
 
 var updateProjectsList = function(data) {
-	$('#projects').append('<div class="project" projectID="'+data.id+'">'+data.title+'</div>');
+	var projectID = $('#projects').length;
+	$('#projects').append('<div class="project" projectID="'+projectID+'">'+data.title+'</div>');
 };
+
+var sendChunk = function(projectName) {
+	remote.getChunk(projectName, gotChunk);
+}
 
 var doTheMaths = function(data){
 	console.log(data);
@@ -71,6 +79,13 @@ var doTheMaths = function(data){
 		results.push(result);
 	}
 	return results;
+}
+
+var scriptIsOver = function(data){
+	var result = data.result;
+	var project = data.project;
+	console.log('Résultat :', result);
+	$('#projects .project:contains('+project+')').remove();
 }
 
 var jsonLength = function(json){
