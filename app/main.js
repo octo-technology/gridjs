@@ -121,6 +121,7 @@ var getChunk = function (projectName, calculate) {
             broadcast(contributors, 'scriptIsOver', {'result': finalResult, 'project': projectName});
             projectsOver[projectName] = project;
             delete projects[projectName];
+            delete remote.runningData;
         }
         else
         {
