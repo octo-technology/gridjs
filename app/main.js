@@ -5,6 +5,8 @@ var http = require('http'),
     shoe = require('shoe'),
     dnode = require('dnode');
 
+var pif= 0;
+
 // Creating Express Server
 var app = express(),
     server = http.createServer(app);
@@ -54,6 +56,8 @@ var addClient = function(r) {
     remote = r;
     clients.push(remote);
     remote.sendProjects(projects);
+    remote.idRem = pif;
+    pif++;
     broadcast(clients, 'sendClients', clients.length);
 };
 
@@ -89,17 +93,20 @@ var createProject = function (project, callback) {
 
 var getChunk = function (projectName, calculate) {
     var project = projects[projectName];
-    var chunk = project.chunks.available.shift();
+    var chunks = project.chunks;
+    var progress = chunks.calculated.length / (chunks.available.length + chunks.running.length + chunks.calculated.length) * 100;
+    var chunk = chunks.available.shift();
     if(!chunk) return calculate();
     if(project.contributors.indexOf(remote) == -1)
     {
         project.contributors.push(remote);
     }    
-    project.chunks.running.push(chunk);
+    chunks.running.push(chunk);
     var data = {
         'projectID': projectName,
         'dataSet': chunk,
-        'map': project.functions.map
+        'map': project.functions.map,
+        'progress': progress
     }
     remote.runningData = data;
     calculate(data, function (result) {
@@ -112,7 +119,6 @@ var getChunk = function (projectName, calculate) {
         chunks.calculated.push(original);
         var i = chunks.running.indexOf(original);
         chunks.running.splice(i, 1);
-        console.log('project updated!');
         if(chunks.running.length == 0 && chunks.available.length == 0)
         {
             var finalResult = reduceThis(project.functions.reduce, project.results);
@@ -125,6 +131,7 @@ var getChunk = function (projectName, calculate) {
         }
         else
         {
+            console.log(remote.idRem)
             remote.sendChunk(projectName);
         }
         
@@ -139,11 +146,11 @@ var disconnect = function(){
     if(!remote.runningData) return;
     var chunkAvorted = remote.runningData;
     var project = projects[chunkAvorted.projectID];
-    var i = project.chunks.running.indexOf(chunkAvorted);
-    project.chunks.running.splice(i, 1);
-    console.log(project.chunks.available);
-    project.chunks.available.unshift(chunkAvorted.dataSet);
-    console.log(project.chunks.available);
+    var chunks = project.chunks;
+    var i = chunks.running.indexOf(chunkAvorted);
+    chunks.running.splice(i, 1);
+    chunks.available.unshift(chunkAvorted.dataSet);
+    console.log(chunks);
 }
 
 var jsonLength = function(json){

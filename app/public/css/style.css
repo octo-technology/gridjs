@@ -17,3 +17,20 @@ textarea
 {
 	margin-top:20px;
 }
+
+#infos table
+{
+	width: 50%;
+}
+
+#projectName
+{
+	text-align: left;
+	width: 25%;
+}
+
+#nbUsers
+{
+	text-align: right;
+	width: 25%;
+}

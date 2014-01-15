@@ -52,7 +52,7 @@ var displaySessionID = function(data){
 };
 
 var displayNbUsers = function(data){
-	$('#nbUsers').text("Number of connected users: "+data);
+	$('#nbUsers').text("Utilisateurs connectés : "+data);
 };
 
 var displayResult =  function(result){
@@ -92,7 +92,8 @@ var doTheMaths = function(data){
 var scriptIsOver = function(data){
 	var result = data.result;
 	var project = data.project;
-	console.log('Résultat :', result);
+	var resultHTML = '<div class="alert alert-success">Résultat : '+result+'</div>';
+	$('#projectData').html(resultHTML);
 	$('#projects .project:contains('+project+')').remove();
 }
 
@@ -102,7 +103,10 @@ var jsonLength = function(json){
 
 var gotChunk = function (data, callback) {
 	if(!data) return;
-	console.log('calculating chunk', data);
-	var res = doTheMaths(data);
-	callback(res);
+	$('#calculating').html('Chunk en cours : '+data.dataSet);
+	$('.progress-bar').css('width', data.progress+'%');
+	setTimeout(function(){
+		var res = doTheMaths(data);
+		callback(res);
+	}, 5000);
 };
