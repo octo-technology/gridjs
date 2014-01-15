@@ -27,17 +27,23 @@ $(function () {
 	    };
 		remote.createProject(project, function () {
 			remote.getChunk(project.title, gotChunk);
+			runProject(project.title);
 	    });
 	});
 
 	$(document).delegate('.project', 'click', function() {
 		sendChunk($(this).text());
+		runProject(project.title);
 	});
 });
 
 ///////////////////////////////////////
 // METHODS
 ///////////////////////////////////////
+var runProject = function(title){
+	$('#projectData').html('Projet en cours : '+title);
+}
+
 var displaySessionID = function(data){
 	$('#sessionID').text('sessionID : ' + data.sessionID);
 	sessionID = data.sessionID;

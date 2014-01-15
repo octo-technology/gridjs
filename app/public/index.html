@@ -42,17 +42,6 @@
 	
 
     <!-- Contenu -->
-    <div class="row">
-      <div class="col-md-6">
-        <div id="sessionID"></div>
-        <div id="nbUsers"></div>
-      </div>
-
-      <div class="col-md-6">
-
-      </div>
-    </div>
-
     <div id="content" class="row">
       <!-- Formulaire de soumission -->
       <div class="col-md-6">
@@ -91,8 +80,21 @@
         
       </div>
       <!-- Liste des Projets -->
-      <div id="projects" class="col-md-6">
-          Liste des projets :
+      <div class="col-md-6">
+          <div id="infos" class="row">
+            <table>
+              <tr>
+                <td id="projectData"></td>
+                <td id="nbUsers"></td>
+              </tr>
+              <tr>
+                <td colspan="2" id="runningData"></td>
+              </tr>
+            </table>
+          </div>
+          <div id="projects" class="row">
+            Liste des projets :
+          </div>
       </div>
     </div>
 	
