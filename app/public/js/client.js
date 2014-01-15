@@ -107,6 +107,6 @@ var gotChunk = function (data, callback) {
 	$('.progress-bar').css('width', data.progress+'%');
 	setTimeout(function(){
 		var res = doTheMaths(data);
-		callback(res);
+		callback(res, remote);
 	}, 5000);
 };

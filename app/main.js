@@ -109,7 +109,7 @@ var getChunk = function (projectName, calculate) {
         'progress': progress
     }
     remote.runningData = data;
-    calculate(data, function (result) {
+    calculate(data, function (result, r) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
         var original = chunk;
@@ -131,7 +131,6 @@ var getChunk = function (projectName, calculate) {
         }
         else
         {
-            console.log(remote.idRem)
             remote.sendChunk(projectName);
         }
         
