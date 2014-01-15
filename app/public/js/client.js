@@ -41,7 +41,8 @@ $(function () {
 // METHODS
 ///////////////////////////////////////
 var runProject = function(title){
-	$('#projectData').html('Projet en cours : '+title);
+	$('#projectName').html('Projet en cours : '+title);
+	$('#projectData .progress').show();
 }
 
 var displaySessionID = function(data){
