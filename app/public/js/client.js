@@ -1,6 +1,7 @@
 var remote;
 
 $(function () {
+	$('#dataSet').val("(function() {var tableau=[]; for (var i=1; i<10000;i++){tableau.push(i);};return tableau})()");
 	var dnode = require('dnode');
 	var shoe = require('shoe');
 
