@@ -101,6 +101,7 @@ var getChunk = function (projectName, calculate) {
         'dataSet': chunk,
         'map': project.functions.map
     }
+    remote.runningData = data;
     calculate(data, function (result) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
@@ -131,8 +132,17 @@ var getChunk = function (projectName, calculate) {
 
 var disconnect = function(){
     var idRemote = clients.indexOf(remote);
-    clients.splice(idRemote, 1);
+    clients.splice(idRemote, 1);    
     broadcast(clients, 'sendClients', clients.length);
+
+    if(!remote.runningData) return;
+    var chunkAvorted = remote.runningData;
+    var project = projects[chunkAvorted.projectID];
+    var i = project.chunks.running.indexOf(chunkAvorted);
+    project.chunks.running.splice(i, 1);
+    console.log(project.chunks.available);
+    project.chunks.available.unshift(chunkAvorted.dataSet);
+    console.log(project.chunks.available);
 }
 
 var jsonLength = function(json){
