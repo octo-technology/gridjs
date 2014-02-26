@@ -32,14 +32,16 @@ var projectsOver = {};
 var clients = [];
 
 var shoeServer = shoe(function (stream) {
-  var remote;
   var d = dnode({
-    createProject: createProject,
-    getChunk: getChunk,
-    onProjectComplete: onProjectComplete
+    createProject: createProject.bind(stream),
+    getChunk: getChunk.bind(stream),
+    onProjectComplete: onProjectComplete.bind(stream)
   });
-  d.on('remote', addClient);
-  d.on('end', disconnect);
+  d.on('remote', function(remote) {
+    stream.remote = remote;
+  });
+  d.on('remote', addClient.bind(stream));
+  d.on('end', disconnect.bind(stream));
   d.pipe(stream).pipe(d);
 });
 
@@ -55,7 +57,7 @@ var broadcast = function(theseClients, callback, params){
 };
 
 var addClient = function(r) {
-    remote = r;
+    var remote = r;
     clients.push(remote);
     remote.sendProjects(projects);
     remote.idRem = pif;
@@ -94,6 +96,8 @@ var createProject = function (project, callback) {
 }
 
 var getChunk = function (projectName, calculate) {
+    var remote = this.remote;
+    if(!remote) return;
     var project = projects[projectName];
     if(!project) return;
     var chunks = project.chunks;
@@ -108,7 +112,7 @@ var getChunk = function (projectName, calculate) {
         'map': project.functions.map,
         'progress': progress
     }
-    //remote.runningData = data;
+    remote.runningData = data;
     calculate(data, function (result, doneProcessing) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
@@ -126,7 +130,7 @@ var getChunk = function (projectName, calculate) {
             project.emit('complete', finalResult);
             projectsOver[projectName] = project;
             delete projects[projectName];
-            //delete remote.runningData;
+            delete remote.runningData;
             broadcast(clients, 'sendProjects', projects);
         }
         else
@@ -144,6 +148,7 @@ var onProjectComplete = function(projectName, listener){
 }
 
 var disconnect = function(){
+    var remote = this.remote;
     var idRemote = clients.indexOf(remote);
     clients.splice(idRemote, 1);    
     broadcast(clients, 'sendClients', clients.length);
@@ -155,7 +160,7 @@ var disconnect = function(){
     var i = chunks.running.indexOf(chunkAvorted);
     chunks.running.splice(i, 1);
     chunks.available.unshift(chunkAvorted.dataSet);
-    console.log(chunks);
+    console.log('added aborted chunk back to queue', chunkAvorted);
 }
 
 var jsonLength = function(json){
