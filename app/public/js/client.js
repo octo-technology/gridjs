@@ -1,16 +1,15 @@
 var remote;
 
 $(function () {
-	$('#dataSet').val("(function() {var tableau=[]; for (var i=1; i<10000;i++){tableau.push(i);};return tableau})()");
+	$('#dataSet').val("(function() {var tableau=[]; for (var i=1; i<1000;i++){tableau.push(i);};return tableau})()");
 	var dnode = require('dnode');
 	var shoe = require('shoe');
 
 	var d = dnode({
-		newProject: updateProjectsList,
+		newProject: addProjectToList,
 		sendProjects: initProjectsList,
 		sendClients: displayNbUsers,
-		sendChunk: sendChunk,
-		scriptIsOver: scriptIsOver
+		sendChunk: sendChunk
 	});
 
 	d.on('remote', function(r) {
@@ -27,14 +26,12 @@ $(function () {
 			'reduce': $('#reduce').val()
 	    };
 		remote.createProject(project, function () {
-			remote.getChunk(project.title, gotChunk);
 			runProject(project.title);
 	    });
 	});
 
 	$(document).delegate('.project', 'click', function() {
-		sendChunk($(this).text());
-		runProject(project.title);
+		runProject($(this).text());
 	});
 });
 
@@ -44,6 +41,10 @@ $(function () {
 var runProject = function(title){
 	$('#projectName').html('Projet en cours : '+title);
 	$('#projectData .progress').show();
+	remote.onProjectComplete(title, function(result){
+		scriptIsOver(title, result);
+	});	
+	sendChunk(title);
 }
 
 var displaySessionID = function(data){
@@ -60,15 +61,16 @@ var displayResult =  function(result){
 };
 
 var initProjectsList = function(data) {
+	$('#projects').html('');
 	if(jsonLength(data) > 0)
 	{
 		$.each(data, function(key, value){
-			updateProjectsList({'id': key, 'title': value.title});
+			addProjectToList({'id': key, 'title': value.title});
 		});
 	}
 };
 
-var updateProjectsList = function(data) {
+var addProjectToList = function(data) {
 	var projectID = $('#projects').length;
 	$('#projects').append('<div class="project" projectID="'+projectID+'">'+data.title+'</div>');
 };
@@ -89,12 +91,10 @@ var doTheMaths = function(data){
 	return results;
 }
 
-var scriptIsOver = function(data){
-	var result = data.result;
-	var project = data.project;
+var scriptIsOver = function(title, result){
 	var resultHTML = '<div class="alert alert-success">Résultat : '+result+'</div>';
 	$('#projectData').html(resultHTML);
-	$('#projects .project:contains('+project+')').remove();
+	$('#projects .project:contains('+title+')').remove();
 }
 
 var jsonLength = function(json){
@@ -111,5 +111,5 @@ var gotChunk = function (data, returnResult) {
       if(err) throw err;
       sendChunk(data.projectID);
     });
-	}, 1000);
+	}, 500);
 };

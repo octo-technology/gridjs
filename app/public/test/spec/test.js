@@ -1,6 +1,6 @@
 describe("L'application", function(){
 	it("envoie la fonction sur un autre browser", function(done){
-		var emetteur = io.connect('http://localhost:8000');
+
 
 		var name = $('#name');
 		var dataSet = $('#dataSet');
@@ -8,8 +8,8 @@ describe("L'application", function(){
 		var reduce = $('#reduce');
 		var exec = $('#execute');
 
-		emetteur.emit = function(socket, data){
-			expect(socket).to.be.equal('sendProject');
+		remote.createProject = function(data, callback){
+			expect(data).to.be.equal('sendProject');
 			expect(data.title).to.be.a('string');
 			expect(data.dataSet).to.be.a('string');
 			expect(data.map).to.be.a('string');

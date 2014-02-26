@@ -3,7 +3,8 @@ var http = require('http'),
     express = require('express'),
     vm = require('vm'),
     shoe = require('shoe'),
-    dnode = require('dnode');
+    dnode = require('dnode'),
+    EventEmitter = require('events').EventEmitter;
 
 var pif= 0;
 
@@ -34,7 +35,8 @@ var shoeServer = shoe(function (stream) {
   var remote;
   var d = dnode({
     createProject: createProject,
-    getChunk: getChunk
+    getChunk: getChunk,
+    onProjectComplete: onProjectComplete
   });
   d.on('remote', addClient);
   d.on('end', disconnect);
@@ -74,7 +76,7 @@ var addProject = function(data, ownerID){
 
     var projectID = data.title;
 
-    var project = {};
+    var project = new EventEmitter();
         project.ownerID = ownerID;
         project.contributors = [];
         project.title = data.title;
@@ -93,14 +95,12 @@ var createProject = function (project, callback) {
 
 var getChunk = function (projectName, calculate) {
     var project = projects[projectName];
+    if(!project) return;
     var chunks = project.chunks;
     var progress = chunks.calculated.length / (chunks.available.length + chunks.running.length + chunks.calculated.length) * 100;
     var chunk = chunks.available.shift();
-    if(!chunk) return calculate();
-    //if(project.contributors.indexOf(remote) == -1)
-    //{
-        //project.contributors.push(remote);
-    //}    
+    if(!chunk) return;
+   
     chunks.running.push(chunk);
     var data = {
         'projectID': projectName,
@@ -123,11 +123,11 @@ var getChunk = function (projectName, calculate) {
         {
             var finalResult = reduceThis(project.functions.reduce, project.results);
             console.log('Résultat: '+finalResult);
-            var contributors = project.contributors;
-            broadcast(contributors, 'scriptIsOver', {'result': finalResult, 'project': projectName});
+            project.emit('complete', finalResult);
             projectsOver[projectName] = project;
             delete projects[projectName];
             //delete remote.runningData;
+            broadcast(clients, 'sendProjects', projects);
         }
         else
         {
@@ -135,6 +135,12 @@ var getChunk = function (projectName, calculate) {
         }
         
     });
+}
+
+var onProjectComplete = function(projectName, listener){
+    var project = projects[projectName];
+    if(!project) return;
+    project.on('complete', listener);
 }
 
 var disconnect = function(){
