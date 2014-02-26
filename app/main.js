@@ -97,10 +97,10 @@ var getChunk = function (projectName, calculate) {
     var progress = chunks.calculated.length / (chunks.available.length + chunks.running.length + chunks.calculated.length) * 100;
     var chunk = chunks.available.shift();
     if(!chunk) return calculate();
-    if(project.contributors.indexOf(remote) == -1)
-    {
-        project.contributors.push(remote);
-    }    
+    //if(project.contributors.indexOf(remote) == -1)
+    //{
+        //project.contributors.push(remote);
+    //}    
     chunks.running.push(chunk);
     var data = {
         'projectID': projectName,
@@ -108,8 +108,8 @@ var getChunk = function (projectName, calculate) {
         'map': project.functions.map,
         'progress': progress
     }
-    remote.runningData = data;
-    calculate(data, function (result, r) {
+    //remote.runningData = data;
+    calculate(data, function (result, doneProcessing) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
         var original = chunk;
@@ -127,11 +127,11 @@ var getChunk = function (projectName, calculate) {
             broadcast(contributors, 'scriptIsOver', {'result': finalResult, 'project': projectName});
             projectsOver[projectName] = project;
             delete projects[projectName];
-            delete remote.runningData;
+            //delete remote.runningData;
         }
         else
         {
-            remote.sendChunk(projectName);
+          doneProcessing();
         }
         
     });

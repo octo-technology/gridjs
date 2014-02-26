@@ -101,12 +101,15 @@ var jsonLength = function(json){
     return Object.keys(json).length;
 }
 
-var gotChunk = function (data, callback) {
+var gotChunk = function (data, returnResult) {
 	if(!data) return;
 	$('#calculating').html('Chunk en cours : '+data.dataSet);
 	$('.progress-bar').css('width', data.progress+'%');
 	setTimeout(function(){
 		var res = doTheMaths(data);
-		callback(res, remote);
-	}, 5000);
+		returnResult(res, function (err) {
+      if(err) throw err;
+      sendChunk(data.projectID);
+    });
+	}, 1000);
 };
