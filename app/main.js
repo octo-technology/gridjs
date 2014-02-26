@@ -71,7 +71,7 @@ var addProject = function(data, ownerID){
     if(!Array.isArray(dataSet))
         console.log('not an Array !'); // Cas d'erreur à traiter
 
-    var chunkLength = 2;
+    var chunkLength = 10;
     var chunks = [];
     while(dataSet.length > 0) 
         chunks.push(dataSet.splice(0,chunkLength));
@@ -125,6 +125,7 @@ var getChunk = function (projectName, calculate) {
         chunks.running.splice(i, 1);
         if(chunks.running.length == 0 && chunks.available.length == 0)
         {
+            console.log('no chunks left');
             var finalResult = reduceThis(project.functions.reduce, project.results);
             console.log('Résultat: '+finalResult);
             project.emit('complete', finalResult);
@@ -156,6 +157,7 @@ var disconnect = function(){
     if(!remote.runningData) return;
     var chunkAvorted = remote.runningData;
     var project = projects[chunkAvorted.projectID];
+    if(!project) return;
     var chunks = project.chunks;
     var i = chunks.running.indexOf(chunkAvorted);
     chunks.running.splice(i, 1);

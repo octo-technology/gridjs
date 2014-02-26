@@ -111,5 +111,5 @@ var gotChunk = function (data, returnResult) {
       if(err) throw err;
       sendChunk(data.projectID);
     });
-	}, 5000);
+	}, 100);
 };
