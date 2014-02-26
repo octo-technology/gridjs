@@ -35,6 +35,8 @@ body
 h1
 {
 	color:#02b6cb;
+	font-size: 1.8em;
+	line-height: 2.5;
 }
 .progress-bar 
 {
@@ -58,3 +60,7 @@ h1
 	width: 25%;
 }
 
+#submit
+{
+	margin-top: 15px;
+}

@@ -143,7 +143,7 @@ var onProjectComplete = function(projectName, listener){
     project.on('complete', listener);
 }
 
-var disconnect = function(){
+var disconnect = function(r){
     var idRemote = clients.indexOf(remote);
     clients.splice(idRemote, 1);    
     broadcast(clients, 'sendClients', clients.length);
