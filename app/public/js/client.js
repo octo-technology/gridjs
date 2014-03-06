@@ -26,8 +26,6 @@ $(function () {
 
 	d.pipe(shoe('shoe')).pipe(d);
 
-	
-
 	$('#execute').click(function(){
 	    var project = {
 			'title': $('#name').val(),
