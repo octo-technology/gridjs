@@ -14,9 +14,15 @@ $(function () {
 
 	d.on('remote', function(r) {
 		remote = r;
+		var urlHash = location.hash;
+		if (urlHash){
+			sendChunk(urlHash.substring(1));
+		}
 	});
 
 	d.pipe(shoe('shoe')).pipe(d);
+
+	
 
 	$('#execute').click(function(){
 	    var project = {
