@@ -2,6 +2,10 @@ var remote;
 
 $(function () {
 	$('#dataSet').val("(function() {var tableau=[]; for (var i=1; i<1000;i++){tableau.push(i);};return tableau})()");
+	$('#name').val('MégaTest');
+	$('#map').val('a*a');
+	$('#reduce').val('a+b');
+
 	var dnode = require('dnode');
 	var shoe = require('shoe');
 
@@ -39,11 +43,15 @@ $(function () {
 // METHODS
 ///////////////////////////////////////
 var runProject = function(title){
-	$('#projectName').html('Projet en cours : '+title);
-	$('#projectData .progress').show();
+	$('#progressBars').append('<div class="project" name="'+title+'"></div>');
+	var thisProject = $('#progressBars .project[name='+title+']');
+		thisProject.append('<div class="name">'+title+' : <span class="progressNum">0</span>%</div>');
+		thisProject.append('<div class="progress progress-striped active"><div class="progress-bar" role="progressbar"></div></div>');
+
 	remote.onProjectComplete(title, function(result){
 		scriptIsOver(title, result);
 	});	
+
 	sendChunk(title);
 }
 
@@ -72,7 +80,7 @@ var initProjectsList = function(data) {
 
 var addProjectToList = function(data) {
 	var projectID = $('#projects').length;
-	$('#projects').append('<div class="project" projectID="'+projectID+'">'+data.title+'</div>');
+	$('#projects').append('<div class="btn btn-default btn-sm project" projectID="'+projectID+'">'+data.title+'</div>');
 };
 
 var sendChunk = function(projectName) {
@@ -93,7 +101,7 @@ var doTheMaths = function(data){
 
 var scriptIsOver = function(title, result){
 	var resultHTML = '<div class="alert alert-success">Résultat : '+result+'</div>';
-	$('#projectData').html(resultHTML);
+	$('#progressBars .project[name='+title+']').html(resultHTML);
 	$('#projects .project:contains('+title+')').remove();
 }
 
@@ -103,13 +111,16 @@ var jsonLength = function(json){
 
 var gotChunk = function (data, returnResult) {
 	if(!data) return;
-	$('#calculating').html('Chunk en cours : '+data.dataSet);
-	$('.progress-bar').css('width', data.progress+'%');
+
+	var thisProject = $('#progressBars .project[name='+data.projectID+']');
+	thisProject.children('.name').children('.progressNum').html(Math.round(data.progress));
+	thisProject.children('.progress').children('.progress-bar').css('width', data.progress+'%');
+
 	setTimeout(function(){
 		var res = doTheMaths(data);
 		returnResult(res, function (err) {
       if(err) throw err;
       sendChunk(data.projectID);
     });
-	}, 100);
+	}, 1000);
 };

@@ -45,24 +45,21 @@
 
 			<div class="col-md-offset-1 col-md-6 bloc">
 				<label for="name" class="control-label"><h3>Nom de votre projet</h3></label>
-				<input type="text" class="form-control" id="name" placeholder="Nom de votre projet" value="test"/>
+				<input type="text" class="form-control" id="name" placeholder="Nom de votre projet"/>
 			</div>
 			
 			<!-- Barre de progression -->
 			<div class="col-md-3 col-md-offset-1 bloc" >
 				<table>
 				  <tr>
-					<td id="projectName"></td>
+					<td id="projectName"><h3>Infos sur le Projet</h3></td>
 				  </tr>
 				  <tr>
 					<td id="nbUsers"></td>
 				  </tr>
 				  <tr>
 					<td colspan="2" id="projectData">
-					  <div id="calculating"></div>
-					  <div class="progress progress-striped active">
-						<div class="progress-bar" role="progressbar"></div>
-					  </div>
+					  <div id="progressBars"></div>
 					</td>
 				  </tr>
 				</table>
@@ -88,7 +85,7 @@
 		
 			<div class="col-md-offset-1 col-md-6 bloc">	
 				<label for="map" class="control-label"><h3>Map</h3></label>
-				<textarea class="form-control" id="map" rows="10" placeholder="Map">a*a</textarea>
+				<textarea class="form-control" id="map" rows="10" placeholder="Map"></textarea>
 			</div>
 			
 		</div>
@@ -96,7 +93,7 @@
 
 			<div class="col-md-offset-1 col-md-6 bloc">	
 				<label for="reduce" class="control-label"><h3>Reduce</h3></label>
-				<textarea class="form-control" id="reduce" rows="10" placeholder="Reduce">a+b</textarea>
+				<textarea class="form-control" id="reduce" rows="10" placeholder="Reduce"></textarea>
 			</div>
 
          </div>

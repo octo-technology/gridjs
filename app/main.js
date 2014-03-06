@@ -58,6 +58,7 @@ var broadcast = function(theseClients, callback, params){
 
 var addClient = function(r) {
     var remote = r;
+        remote.runningData = [];
     clients.push(remote);
     remote.sendProjects(projects);
     remote.idRem = pif;
@@ -112,7 +113,7 @@ var getChunk = function (projectName, calculate) {
         'map': project.functions.map,
         'progress': progress
     }
-    remote.runningData = data;
+    remote.runningData.push(data);
     calculate(data, function (result, doneProcessing) {
         console.log('result for', chunk, 'is', result);
         var calculated = result;
@@ -123,6 +124,7 @@ var getChunk = function (projectName, calculate) {
         chunks.calculated.push(original);
         var i = chunks.running.indexOf(original);
         chunks.running.splice(i, 1);
+        remote.runningData.pop();
         if(chunks.running.length == 0 && chunks.available.length == 0)
         {
             console.log('no chunks left');
@@ -131,7 +133,7 @@ var getChunk = function (projectName, calculate) {
             project.emit('complete', finalResult);
             projectsOver[projectName] = project;
             delete projects[projectName];
-            delete remote.runningData;
+            remote.runningData = [];
             broadcast(clients, 'sendProjects', projects);
         }
         else
@@ -155,14 +157,17 @@ var disconnect = function(){
     broadcast(clients, 'sendClients', clients.length);
 
     if(!remote.runningData) return;
-    var chunkAvorted = remote.runningData;
-    var project = projects[chunkAvorted.projectID];
-    if(!project) return;
-    var chunks = project.chunks;
-    var i = chunks.running.indexOf(chunkAvorted);
-    chunks.running.splice(i, 1);
-    chunks.available.unshift(chunkAvorted.dataSet);
-    console.log('added aborted chunk back to queue', chunkAvorted);
+    for(var i in remote.runningData)
+    {
+        var chunkAvorted = remote.runningData[i];
+        var project = projects[chunkAvorted.projectID];
+        if(!project) return;
+        var chunks = project.chunks;
+        var i = chunks.running.indexOf(chunkAvorted);
+        chunks.running.splice(i, 1);
+        chunks.available.unshift(chunkAvorted.dataSet);
+        console.log('added aborted chunk back to queue', chunkAvorted);
+    }
 }
 
 var jsonLength = function(json){
