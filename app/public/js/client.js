@@ -114,7 +114,9 @@ var doTheMaths = function(data){
 }
 
 var scriptIsOver = function(title, result){
-	var resultHTML = '<div class="alert alert-success">Résultat : '+result+'</div>';
+	var resultHTML = '<div class="alert alert-success">';
+		resultHTML+= '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+		resultHTML+= 'Résultat de '+title+' : '+result+'</div>';
 	$('#progressBars .project[name='+title+']').html(resultHTML);
 	$('#projects .project:contains('+title+')').remove();
 }

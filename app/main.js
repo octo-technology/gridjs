@@ -69,13 +69,15 @@ var addClient = function(r) {
 var addProject = function(data, ownerID){
     console.log('data', data);
     var dataSet = vm.runInNewContext(data.dataSet);
-    if(!Array.isArray(dataSet))
-        console.log('not an Array !'); // Cas d'erreur à traiter
+    if(!Array.isArray(dataSet)) {
+        console.log('not an Array !'); 
+    }
 
-    var chunkLength = 10;
+    var chunkLength = Math.max(10, Math.min(50, dataSet.length/100));
     var chunks = [];
-    while(dataSet.length > 0) 
+    while(dataSet.length > 0) {
         chunks.push(dataSet.splice(0,chunkLength));
+    }
 
     var projectID = data.title;
 
