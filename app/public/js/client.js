@@ -27,15 +27,27 @@ $(function () {
 	d.pipe(shoe('shoe')).pipe(d);
 
 	$('#execute').click(function(){
-	    var project = {
-			'title': $('#name').val(),
-			'dataSet': $('#dataSet').val(),
-			'map': $('#map').val(),
-			'reduce': $('#reduce').val()
-	    };
-		remote.createProject(project, function () {
-			runProject(project.title);
-	    });
+		var projectTitle = $('#name').val();
+		var alreadyRunning = false;
+		$('#projects').find("div").each(function(){
+			if ($(this).text() == projectTitle){
+				alreadyRunning = true;
+				return;
+			}
+		});
+		if (alreadyRunning){
+			alert('Nom de projet déjà utilisé !');
+		} else{
+		    var project = {
+				'title': $('#name').val(),
+				'dataSet': $('#dataSet').val(),
+				'map': $('#map').val(),
+				'reduce': $('#reduce').val()
+		    };
+			remote.createProject(project, function () {
+				runProject(project.title);
+		    });
+		}
 	});
 
 	$(document).delegate('.project', 'click', function() {
