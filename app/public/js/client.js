@@ -39,7 +39,17 @@ $(function () {
 	});
 
 	$(document).delegate('.project', 'click', function() {
-		runProject($(this).text());
+		var projectTitle = $(this).text();
+		var alreadyRunning = false;
+		$('.project').each(function(){
+			if ($(this).attr('name') == projectTitle){
+				alreadyRunning = true;
+				return;
+			}
+		});
+		if (!alreadyRunning){
+			runProject(projectTitle);
+		}
 	});
 });
 
