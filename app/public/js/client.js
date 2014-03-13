@@ -19,7 +19,7 @@ $(function () {
 	d.on('remote', function(r) {
 		remote = r;
 		var urlHash = location.hash;
-		if (urlHash){
+		if(urlHash){
 			sendChunk(urlHash.substring(1));
 		}
 	});

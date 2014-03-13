@@ -138,7 +138,7 @@ var getChunk = function (projectName, calculate) {
         }
         else
         {
-          doneProcessing();
+            doneProcessing();
         }
         
     });
