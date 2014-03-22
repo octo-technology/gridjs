@@ -1,26 +1,16 @@
-#  Node.js clickstart
+# GridJS
 
-This clickstart demonstrates a basic hello world node.js app on CloudBees with continuous deployment.
-Jenkins runs tests via npm. 
+GridJS is a distributed JavaScript processor.
 
-package.json is used to specify what packages are needed - main.js is the default server app
-(you can set main_js via bees config:set to override it to something else)
-
-<a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/nodejs-clickstart/master/clickstart.json"><img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
-
-
-If you don't have a cloudbees account:
-  <div>Sign in with GitHub:<div><button onClick="javascript:window.location='https://grandcentral.cloudbees.com/authenticate/start?provider=github&login_redirect=/';"><img src="https://grandcentral.cloudbees.com/images/github-icon_40.png" /></button>
-
-
-
+You provide data, a map and a reduce function. GridJS then takes care of distributing it to all other opened GridJS page.
 
 # To run manually locally
 
-
 0. Install node.js
 1. Clone this repo
-2. node app/main.js
+2. cd app
+3. npm install
+4. node main.js
 
 # To deploy manually to CloudBees
 
