@@ -74,7 +74,7 @@
   <builders>
     <hudson.tasks.Shell>
       <command>
-node_version=0.10.5
+node_version=0.10.21
 
 if [ ! -e nodejs-plugin-$node_version.zip ]
 then
