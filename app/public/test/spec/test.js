@@ -29,18 +29,18 @@ describe("L'application", function(){
 	});
 
 	it("ajoute le projet à la liste des projets en cours", function(){
-		var projectsList = $('#projects .project');
-		var projectHTML = projectsList.html();
-		var projectID = projectsList.attr('projectID');
+		var projectList = $('#projects .project');
+		var projectHTML = projectList.html();
+		var projectID = projectList.attr('projectID');
 
-		expect(projectsList).to.have.length(1);
+		expect(projectList).to.have.length(1);
 		expect(projectHTML).to.be.equal('test');
 		expect(projectID).to.be.equal('3556498');
 	});
 
 	it("envoie une demande de calcul si on clique sur un projet", function(done){
 		var emetteur = io.connect('http://localhost:8000');
-		var projectsList = $('#projects .project');
+		var projectList = $('#projects .project');
 
 		emetteur.emit = function(socket, data){
 			expect(socket).to.be.equal('getChunk');
@@ -49,6 +49,6 @@ describe("L'application", function(){
 			done();
 		};	
 
-		projectsList.click();
+		projectList.click();
 	});	
 });
