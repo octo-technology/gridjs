@@ -8,7 +8,7 @@ file_name=node-$node_version-linux-x64
 
 if [ ! -e $file_name ]
 then
-    wget http://nodejs.org/dist/$node_version/$file_name.tar.gz
+    curl -f -s --location http://nodejs.org/dist/$node_version/$file_name.tar.gz -o $file_name.tar.gz
     tar xf $file_name.tar.gz
 fi
 rm -rf target
