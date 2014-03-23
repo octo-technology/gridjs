@@ -2,7 +2,7 @@ var remote;
 
 $(function () {
 	$('#dataSet').val("(function() {var tableau=[]; for (var i=1; i<1000;i++){tableau.push(i);};return tableau})()");
-	$('#name').val('MégaTest');
+	$('#name').val('MegaTest');
 	$('#map').val('a*a');
 	$('#reduce').val('a+b');
 
@@ -36,7 +36,7 @@ $(function () {
 			}
 		});
 		if (alreadyRunning){
-			alert('Nom de projet déjà utilisé !');
+			alert('Project name already exists!');
 		} else{
 		    var project = {
 				'title': $('#name').val(),
@@ -87,7 +87,7 @@ var displaySessionID = function(data){
 };
 
 var displayNbUsers = function(data){
-	$('#nbUsers').text("Utilisateurs connectés : "+data);
+	$('#nbUsers').text("Connected users: "+data);
 };
 
 var displayResult =  function(result){
