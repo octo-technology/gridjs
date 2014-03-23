@@ -69,7 +69,9 @@ $(function () {
 // METHODS
 ///////////////////////////////////////
 var runProject = function(title){
-	$('#progressBars').append('<div class="project" name="'+title+'"></div>');
+	if(!$('#progressBars .project[name='+title+']').length){
+		$('#progressBars').append('<div class="project" name="'+title+'"></div>');
+	}
 	var thisProject = $('#progressBars .project[name='+title+']');
 		thisProject.append('<div class="name">'+title+' : <span class="progressNum">0</span>%</div>');
 		thisProject.append('<div class="progress progress-striped active"><div class="progress-bar" role="progressbar"></div></div>');
