@@ -73,7 +73,7 @@ var addProject = function(data, ownerID){
         console.log('not an Array !'); 
     }
 
-    var chunkLength = Math.max(10, Math.min(50, dataSet.length/100));
+    var chunkLength = Math.max(10, Math.min(50, dataSet.length/10));
     var chunks = [];
     while(dataSet.length > 0) {
         chunks.push(dataSet.splice(0,chunkLength));
